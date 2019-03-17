@@ -1,5 +1,31 @@
+-- Wet cob
+minetest.register_node('earthbuild_interact:wet_cob', {
+	description = 'Cob',
+	drawtype = "normal",
+	tiles = {"earthbuild_cob.png^[colorize:#3c1f0680"},
+	paramtype = "light",
+	drop = "default:dirt",
+	groups = {crumbly = 3, falling_node = 1},
+	on_punch = function( pos, node, player, pointedthing )
+		if player:get_wielded_item():get_definition().name == "default:stick" then
+			minetest.set_node( pos, { name = "earthbuild_interact:wet_mud_brick" } )
+		end
+	end
+})
+
+minetest.register_abm({
+	label = "earthbuild_interact:cob_drying",
+	nodenames = { "earthbuild_interact:wet_cob" },
+	-- neighbors = {},
+	interval = 2,
+	chance = 5,
+	action = function( pos, _, _, _ )
+		minetest.set_node( pos, { name = "earthbuild:cob" } )
+	end
+})
+
+-- Helper for registering types of mud
 local function register_mud( name, desc, base, overlay, visc, is_flowing, source, flowing )
-	--helper for registering types of mud
 	
 	local flowstring = "source"
 
@@ -68,20 +94,20 @@ local function register_mud( name, desc, base, overlay, visc, is_flowing, source
 	})
 	end
 
--- registering mud
+-- Registering muds
 register_mud( "thickmud_source", "Thick Mud", "earthbuild_interact_mud.png", "earthbuild_interact_thickmud_overlay_animated.png", 8, false, "thickmud_source", "thickmud_flowing" )
 register_mud( "thickmud_flowing", "Thick Mud (Flowing)", "earthbuild_interact_mud.png", "earthbuild_interact_thickmud_overlay_animated.png", 8, true, "thickmud_source", "thickmud_flowing" )
 
 register_mud( "mud_source", "Mud", "earthbuild_interact_mud.png", "earthbuild_interact_mud_overlay_animated.png", 4, false, "mud_source", "mud_flowing" )
 register_mud( "mud_flowing", "Mud (Flowing)", "earthbuild_interact_mud.png", "earthbuild_interact_mud_overlay_animated.png", 4, true, "mud_source", "mud_flowing" )
 
--- mud clearing and spreading ABMs
+-- Mud clearing and spreading ABMs
 minetest.register_abm({
 	label = "earthbuild_interact:mud_cleaning_and_spreading",
 	nodenames = { "earthbuild_interact:mud_source" },
 	-- neighbors = {},
 	interval = 10,
-	chance = .2,
+	chance = 5,
 	action = function( pos, _, _, _ )
 		local spread = 0
 		for i = -1,1 do
@@ -107,7 +133,7 @@ minetest.register_abm({
 	nodenames = { "earthbuild_interact:thickmud_source" },
 	-- neighbors = {},
 	interval = 2,
-	chance = .5,
+	chance = 2,
 	action = function( pos, _, _, _ )
 		for i = -1,1 do
 			for j = -1,1 do
@@ -128,7 +154,7 @@ minetest.register_abm({
 	end
 })
 
--- adding dropped item based mud crafting
+-- Adding dropped item based mud crafting
 local reaction_time = 1000
 local reaction_time_random = 800
 local function passivize( pos, time )
@@ -183,7 +209,7 @@ local item = {
 					reacting = true
 				elseif node.name == "earthbuild_interact:thickmud_source" and self.is_plantmat then
 					minetest.set_node( self.object:get_pos(), { name = "default:water_source" } )
-					minetest.spawn_item( pos, "earthbuild:cob 3" )
+					minetest.spawn_item( pos, "earthbuild_interact:wet_cob 3" )
 					reacting = true
 				end
 			end
@@ -204,7 +230,7 @@ local item = {
 					minsize = 2,
 					maxsize = 4,
 					collisiondetection = true,
-					texture = "default_item_smoke.png^[colorize:#3c1f06"
+					texture = "default_item_smoke.png^[colorize:#3c1f06aa"
 				})
 				local stack = ItemStack( self.itemstring )
 				stack:take_item( 1 )
